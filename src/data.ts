@@ -113,7 +113,7 @@ export const defaultData = {
           "https://res.cloudinary.com/drozayaqc/image/upload/v1773477247/IMG_2671_qyfzeq.jpg",
           "https://res.cloudinary.com/drozayaqc/image/upload/v1773477247/IMG_4276_yypr4n.jpg",
           "https://res.cloudinary.com/drozayaqc/image/upload/v1773477246/IMG_0780_trop0z.png",
-          "https://res.cloudinary.com/drozayaqc/image/upload/v1773477244/att.ZvJ1IQHRTs0ilfQ6YKy-L3Mde4O6ud5gJdlTSExY6es_q2cyhk.jpg",
+          "https://res.cloudinary.com/drozayaqc/image/upload/v1773477251/IMG_9734_o0vzbr.png",
           "https://res.cloudinary.com/drozayaqc/image/upload/v1773477247/IMG_4029_og3bnn.png",
           "https://res.cloudinary.com/drozayaqc/image/upload/v1773477247/IMG_4322_d5nla6.jpg",
           "https://res.cloudinary.com/drozayaqc/image/upload/v1773477247/IMG_4331_bjufcj.jpg",
@@ -143,13 +143,13 @@ export const defaultData = {
     "title2": "Tấn",
     "sectionTitle": "Hành Trình Tới Những Vì Sao",
     "sectionDesc": "Mỗi cột mốc là một vì sao sáng trên bầu trời trưởng thành. Tấn rất mong được gặp {name} trong buổi chiều đặc biệt này để cùng chia sẻ niềm vui của sự khởi đầu mới.",
-    "btn": "✨",
+    "btn": "✨ 0345 543 548 - TẤN",
     "date": "21.03.2026",
     "isoDate": "2026-03-21T16:00:00",
     "time": "16:00 – 18:00 (Chiều Thứ Bảy)",
     "location": "UEH A – Cơ sở A",
     "address": "59C Nguyễn Đình Chiểu, Phường Xuân Hòa, TP. HCM",
-    "dresscode": "Tự tin là chính mình",
+    "dresscode": "",
     "dresscodeColor": "",
     "mapTitle": "Nơi gặp gỡ và lưu giữ kỷ niệm",
     "mapDesc": "Hội trường A.116 - UEH | Hồ Con Rùa",
@@ -201,7 +201,7 @@ export const defaultData = {
     "btn2": "Xem lịch trình",
     "thankYouTitle": "Cảm ơn {name} rất nhiều!",
     "thankYouDesc": "Vì đã dành thời gian quý báu của mình để vun đắp nên hành trình của Tấn. Tấn rất mong chờ được gặp {pronoun} tại buổi lễ!",
-    "webhookUrl": "https://script.google.com/macros/s/AKfycbzhnovXvC1-H_G62QoqhIZIfFixh58lwg012FOApVkeXpf3crC6WAYT0fQSIxOJaCr5SQ/exec",
+    "webhookUrl": "https://script.google.com/macros/s/AKfycbw34DsnzDo3ZWanDPVKsxtxMvxTtrBBibpcxReddG1LEJUmykUCTZgEZR5B2iHJIsKmSw/exec",
     "footer": "© 2026 Graduation Ceremony. Designed with Celestial Light."
   }
 };

@@ -41,42 +41,38 @@ export default function RSVP({ guestName, pronoun }: any) {
       message: message
     };
 
-    const webhookUrl = data.rsvp.webhookUrl;
+    const webhookUrl = data.rsvp?.webhookUrl;
+    let webhookSuccess = false;
 
     if (webhookUrl && webhookUrl.trim()) {
       try {
-        // Google Apps Script deployed as "Anyone can access" supports CORS.
-        // We send as form-encoded to avoid CORS preflight issues.
-        // The Apps Script doPost(e) can read e.postData.contents for JSON,
-        // or e.parameter for form data.
-        const response = await fetch(webhookUrl, {
+        // Google Apps Script redirects on POST (302), which causes CORS errors
+        // with normal fetch. Using mode: 'no-cors' sends the request successfully
+        // but returns an opaque response (status 0). The data still reaches
+        // Google Sheets — we just can't read the response.
+        await fetch(webhookUrl, {
           method: 'POST',
+          mode: 'no-cors',
           headers: {
             'Content-Type': 'text/plain;charset=UTF-8',
           },
           body: JSON.stringify(payload),
         });
-
-        // For Google Apps Script, even a redirect (302) is a success
-        if (!response.ok && response.status !== 0) {
-          // response.status === 0 happens sometimes with opaque responses
-          console.warn('Webhook response status:', response.status);
-        }
+        // With no-cors, if we get here without throwing, the request was sent
+        webhookSuccess = true;
+        console.log('RSVP sent to Google Sheets webhook successfully');
       } catch (error) {
-        console.error("Error submitting RSVP via webhook:", error);
-        // Don't fail silently — save locally as backup
-        saveToLocalStorage(payload);
-        setSubmitError('Đã gửi thành công! (Lưu offline do mạng không ổn định)');
+        console.error('Error submitting RSVP via webhook:', error);
+        webhookSuccess = false;
       }
-    } else {
-      // No webhook configured — save to localStorage
-      saveToLocalStorage(payload);
-      console.log("No webhook URL configured. RSVP saved to localStorage:", payload);
     }
 
     // Always save a local copy as backup
-    if (webhookUrl && webhookUrl.trim() && !submitError) {
-      saveToLocalStorage(payload);
+    saveToLocalStorage(payload);
+
+    if (!webhookSuccess && webhookUrl && webhookUrl.trim()) {
+      // Webhook failed but we have a URL configured — warn but don't block
+      setSubmitError('Lời chúc đã được ghi nhận! (Đang chờ đồng bộ lên Google Sheets)');
     }
 
     setIsSubmitting(false);

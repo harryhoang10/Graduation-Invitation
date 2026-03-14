@@ -30,7 +30,7 @@ export const Navbar: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <div className="text-primary font-display font-bold text-xl tracking-widest cursor-pointer" onClick={() => scrollTo('hero')}>
-          TẤN
+          TẤN - 0345 543 548
         </div>
         
         <div className="hidden md:flex items-center gap-8">

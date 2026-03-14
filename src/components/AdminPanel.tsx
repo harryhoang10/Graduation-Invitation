@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
-import { Settings, Save, Share2, Check, Copy, Database, X, AlertTriangle, Download, Loader2 } from 'lucide-react';
+import { Settings, Save, Share2, Check, Copy, Database, X, AlertTriangle, Download, Loader2, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const RSVP_STORAGE_KEY = 'graduation_rsvp_list';
@@ -12,11 +12,39 @@ export const AdminPanel: React.FC = () => {
   const [showWebhookModal, setShowWebhookModal] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [showRSVPList, setShowRSVPList] = useState(false);
+  const [cloudRSVP, setCloudRSVP] = useState<any[]>([]);
+  const [isLoadingRSVP, setIsLoadingRSVP] = useState(false);
 
   // Sync webhook URL state with data context
   useEffect(() => {
     setWebhookUrl(data.rsvp?.webhookUrl || '');
   }, [data.rsvp?.webhookUrl]);
+
+  // Fetch RSVP data from Google Sheets when modal opens
+  useEffect(() => {
+    if (showRSVPList) {
+      fetchCloudRSVP();
+    }
+  }, [showRSVPList]);
+
+  const fetchCloudRSVP = async () => {
+    const url = data.rsvp?.webhookUrl;
+    if (!url || !url.trim()) return;
+    
+    setIsLoadingRSVP(true);
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const result = await response.json();
+        if (Array.isArray(result)) {
+          setCloudRSVP(result);
+        }
+      }
+    } catch (error) {
+      console.warn('Could not fetch cloud RSVP data:', error);
+    }
+    setIsLoadingRSVP(false);
+  };
 
   if (!isAdmin) return null;
 
@@ -37,7 +65,7 @@ export const AdminPanel: React.FC = () => {
     setShowWebhookModal(false);
   };
 
-  const getRSVPList = (): any[] => {
+  const getLocalRSVPList = (): any[] => {
     try {
       return JSON.parse(localStorage.getItem(RSVP_STORAGE_KEY) || '[]');
     } catch {
@@ -45,13 +73,32 @@ export const AdminPanel: React.FC = () => {
     }
   };
 
+  // Merge cloud + local, deduplicate by timestamp+name, newest first
+  const getMergedRSVPList = (): (any & { _source: string })[] => {
+    const local = getLocalRSVPList().map(r => ({ ...r, _source: 'local' }));
+    const cloud = cloudRSVP.map(r => ({ ...r, _source: 'cloud' }));
+    const map = new Map<string, any>();
+    for (const item of cloud) {
+      map.set(`${item.timestamp}_${item.fullName}`, item);
+    }
+    for (const item of local) {
+      const key = `${item.timestamp}_${item.fullName}`;
+      if (!map.has(key)) map.set(key, item);
+    }
+    return Array.from(map.values()).sort((a, b) =>
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  };
+
+  const getRSVPList = getLocalRSVPList;
+
   const exportRSVPData = () => {
-    const list = getRSVPList();
+    const list = getMergedRSVPList();
     if (list.length === 0) return;
     
-    const headers = ['Thời gian', 'Xưng hô', 'Tên', 'Tên đầy đủ', 'Trạng thái', 'Lời chúc'];
+    const headers = ['Thời gian', 'Xưng hô', 'Tên', 'Tên đầy đủ', 'Trạng thái', 'Lời chúc', 'Nguồn'];
     const rows = list.map((r: any) => [
-      r.timestamp, r.pronoun, r.name, r.fullName, r.status, r.message || ''
+      r.timestamp, r.pronoun, r.name, r.fullName, r.status, r.message || '', r._source
     ]);
     const csv = [headers, ...rows].map(row => row.map((cell: string) => `"${cell}"`).join(',')).join('\n');
     
@@ -194,6 +241,27 @@ export const AdminPanel: React.FC = () => {
   return ContentService
     .createTextOutput("OK")
     .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function doGet() {
+  var sheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getActiveSheet();
+  var rows = sheet.getDataRange().getValues();
+  var result = [];
+  for (var i = 1; i < rows.length; i++) {
+    result.push({
+      timestamp: rows[i][0],
+      pronoun: rows[i][1],
+      name: rows[i][2],
+      fullName: rows[i][3],
+      status: rows[i][4],
+      message: rows[i][5]
+    });
+  }
+  return ContentService
+    .createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }`}
                     </pre>
                     <p className="text-[10px] text-slate-500 mt-2">
@@ -242,38 +310,61 @@ export const AdminPanel: React.FC = () => {
                     <Download size={24} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-serif text-white">Danh sách RSVP</h2>
-                    <p className="text-slate-400 text-sm">{getRSVPList().length} khách đã xác nhận</p>
+                    <h2 className="text-2xl font-serif text-white">Danh sách lời chúc</h2>
+                    <p className="text-slate-400 text-sm">
+                      {getMergedRSVPList().length} lời chúc
+                      {isLoadingRSVP && ' (đang tải...)'}
+                    </p>
                   </div>
                 </div>
-                {getRSVPList().length > 0 && (
+                <div className="flex items-center gap-2">
                   <button 
-                    onClick={exportRSVPData}
-                    className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary/20 transition-colors cursor-pointer"
+                    onClick={fetchCloudRSVP}
+                    disabled={isLoadingRSVP}
+                    className="flex items-center gap-1 bg-blue-500/10 text-blue-400 px-3 py-2 rounded-xl text-xs font-bold hover:bg-blue-500/20 transition-colors cursor-pointer disabled:opacity-50"
+                    title="Tải lại từ Google Sheets"
                   >
-                    <Download size={14} />
-                    Export CSV
+                    <RefreshCw size={12} className={isLoadingRSVP ? 'animate-spin' : ''} />
+                    Refresh
                   </button>
-                )}
+                  {getMergedRSVPList().length > 0 && (
+                    <button 
+                      onClick={exportRSVPData}
+                      className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-2 rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors cursor-pointer"
+                    >
+                      <Download size={12} />
+                      CSV
+                    </button>
+                  )}
+                </div>
               </div>
               
               <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                {getRSVPList().length === 0 ? (
+                {isLoadingRSVP && getMergedRSVPList().length === 0 ? (
                   <div className="text-center py-12 text-slate-500">
-                    <p className="text-lg mb-2">Chưa có ai xác nhận tham dự</p>
-                    <p className="text-sm">Dữ liệu RSVP sẽ hiển thị tại đây</p>
+                    <Loader2 size={24} className="mx-auto mb-3 animate-spin text-primary" />
+                    <p className="text-sm">Đang tải dữ liệu từ Google Sheets...</p>
+                  </div>
+                ) : getMergedRSVPList().length === 0 ? (
+                  <div className="text-center py-12 text-slate-500">
+                    <p className="text-lg mb-2">Chưa có lời chúc nào</p>
+                    <p className="text-sm">Dữ liệu sẽ hiển thị tại đây khi khách gửi lời chúc</p>
                   </div>
                 ) : (
-                  getRSVPList().map((rsvp: any, i: number) => (
-                    <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-start gap-4">
+                  getMergedRSVPList().map((rsvp: any, i: number) => (
+                    <div key={`${rsvp.timestamp}_${rsvp.fullName}_${i}`} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-start gap-4">
                       <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                        {(rsvp.name || '?')[0].toUpperCase()}
+                        {(rsvp.name || rsvp.fullName || '?')[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="font-bold text-white text-sm">{rsvp.fullName}</span>
-                          <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-medium">
-                            {rsvp.status}
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                            rsvp._source === 'cloud' 
+                              ? 'bg-blue-500/20 text-blue-400' 
+                              : 'bg-slate-500/20 text-slate-400'
+                          }`}>
+                            {rsvp._source === 'cloud' ? '☁️ Google Sheets' : '💾 Local'}
                           </span>
                         </div>
                         {rsvp.message && (
@@ -283,6 +374,26 @@ export const AdminPanel: React.FC = () => {
                           {new Date(rsvp.timestamp).toLocaleString('vi-VN')}
                         </p>
                       </div>
+                      {rsvp._source === 'local' && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`Xóa lời chúc của "${rsvp.fullName}"?`)) {
+                              const list = getLocalRSVPList();
+                              const idx = list.findIndex((r: any) => r.timestamp === rsvp.timestamp && r.fullName === rsvp.fullName);
+                              if (idx !== -1) {
+                                list.splice(idx, 1);
+                                localStorage.setItem(RSVP_STORAGE_KEY, JSON.stringify(list));
+                                setShowRSVPList(false);
+                                setTimeout(() => setShowRSVPList(true), 50);
+                              }
+                            }
+                          }}
+                          className="shrink-0 p-2 text-red-400/50 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors cursor-pointer"
+                          title="Xóa"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
                     </div>
                   ))
                 )}
