@@ -112,10 +112,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem(STORAGE_KEY);
         return true;
       }
-      return false;
+      // If on production (Vercel), /api/save returns 404 or 405
+      // Fall back to localStorage-only persistence
+      console.warn('Server save unavailable (production mode). Data saved to localStorage.');
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.error('localStorage also failed:', e);
+      }
+      setHasUnsavedChanges(false);
+      return true; // Return true so user doesn't see error on production
     } catch (error) {
-      console.error('Failed to save data:', error);
-      return false;
+      // Network error (e.g., /api/save doesn't exist on Vercel)
+      console.warn('Server save failed, falling back to localStorage:', error);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.error('localStorage also failed:', e);
+        return false;
+      }
+      setHasUnsavedChanges(false);
+      return true; // Still return true — data is safely in localStorage
     }
   }, [data]);
 

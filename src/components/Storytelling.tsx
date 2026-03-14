@@ -44,7 +44,7 @@ export default function Storytelling({ guestName, pronoun }: any) {
             className={`relative mb-24 sm:mb-40 flex flex-col ${align === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-10 sm:gap-16 group`}
           >
             <div className="w-full md:w-1/2 aspect-[4/5] rounded-3xl overflow-hidden bg-white/5 backdrop-blur-xl p-3 border border-primary/20 shadow-[0_0_40px_rgba(0,0,0,0.4)] relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10"></div>
               <EditableImage path={`storytelling.chapters.${idx}.img`} className="w-full h-full rounded-2xl object-cover transition-transform duration-[2000ms] group-hover:scale-105" />
               <div className="absolute inset-0 rounded-3xl border border-white/10 pointer-events-none"></div>
             </div>
@@ -73,7 +73,7 @@ export default function Storytelling({ guestName, pronoun }: any) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent -z-10 pointer-events-none"></div>
         
         <div className="w-full max-w-3xl aspect-video rounded-3xl overflow-hidden bg-white/5 backdrop-blur-xl p-3 sm:p-4 border border-primary/30 shadow-[0_0_50px_rgba(249,215,126,0.15)] relative group">
-          <div className="absolute inset-0 bg-gradient-to-t from-background-dark/80 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-700"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-background-dark/80 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none"></div>
           <EditableImage path="storytelling.finalChapter.img" className="w-full h-full rounded-2xl object-cover transition-transform duration-[3000ms] group-hover:scale-105" />
           <div className="absolute inset-0 rounded-3xl border border-white/20 pointer-events-none z-20"></div>
         </div>

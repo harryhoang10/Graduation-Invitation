@@ -112,11 +112,11 @@ export default function RSVP({ guestName, pronoun }: any) {
               <EditableText as="p" path="rsvp.subtitle" guestName={guestName} multiline className="text-slate-300 mb-10 text-base sm:text-lg block font-light" />
               
               <div className="max-w-2xl mx-auto mb-10 text-left">
-                <label className="block text-primary/80 text-sm font-medium mb-3 ml-2 uppercase tracking-widest">Gửi gắm lời chúc tốt đẹp đến Tấn</label>
+                <EditableText as="label" path="rsvp.messageLabel" className="block text-primary/80 text-sm font-medium mb-3 ml-2 uppercase tracking-widest" />
                 <textarea 
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Viết lời chúc của bạn ở đây..."
+                  placeholder={data.rsvp?.messagePlaceholder || 'Viết lời chúc của bạn ở đây...'}
                   className="w-full bg-black/20 border border-primary/20 rounded-2xl p-5 text-white placeholder:text-slate-500 focus:border-primary/60 focus:ring-1 focus:ring-primary/60 transition-all resize-none h-32 font-light"
                 ></textarea>
               </div>
