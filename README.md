@@ -18,3 +18,4 @@ View your app in AI Studio: https://ai.studio/apps/34a1216e-cb8c-45f1-83fc-d56e9
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+# Graduation-Invitation
