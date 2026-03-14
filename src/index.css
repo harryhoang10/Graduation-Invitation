@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cinzel", serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Montserrat", sans-serif;
+
+  --color-primary: #f9d77e;
+  --color-background-dark: #0a090d;
+  --color-champagne: #f7e7ce;
+  --color-celestial-gold: #e2c275;
+
+  --animate-fade-in: fade-in 1s ease-out forwards;
+  --animate-pulse-glow: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 15px rgba(249, 215, 126, 0.6)); }
+  50% { opacity: 0.7; filter: drop-shadow(0 0 5px rgba(249, 215, 126, 0.3)); }
+}
+
+body {
+  @apply bg-background-dark text-slate-100 font-sans antialiased;
+}
