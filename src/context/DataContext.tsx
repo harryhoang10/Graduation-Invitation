@@ -25,21 +25,17 @@ function deepSet(obj: any, path: string, value: any): any {
   let current = clone;
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
-    // Handle numeric keys for array access
-    const idx = Number(key);
-    if (!isNaN(idx) && Array.isArray(current)) {
-      current = current[idx];
-    } else {
-      current = current[key];
+    
+    // Auto-vivify missing objects/arrays dynamically
+    if (current[key] === undefined || current[key] === null) {
+      const nextKey = keys[i + 1];
+      current[key] = isNaN(Number(nextKey)) ? {} : [];
     }
+    
+    current = current[key];
   }
   const lastKey = keys[keys.length - 1];
-  const lastIdx = Number(lastKey);
-  if (!isNaN(lastIdx) && Array.isArray(current)) {
-    current[lastIdx] = value;
-  } else {
-    current[lastKey] = value;
-  }
+  current[lastKey] = value;
   return clone;
 }
 
@@ -87,7 +83,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newData = deepSet(prev, path, value);
 
       // Auto-persist to localStorage so admin edits are never lost
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+      } catch (e: any) {
+        console.error("Failed to save to localStorage", e);
+        if (e.name === 'QuotaExceededError' || e.message?.includes('quote') || e.message?.includes('size')) {
+          alert('Lỗi: Tổng dung lượng ảnh tải lên đã vượt quá giới hạn bộ nhớ tạm của trình duyệt (thường >5MB). Tuy ảnh vẫn hiển thị nhưng sẽ mất khi F5. Bạn nên lưu code ngay hoặc dùng tính năng "Nhập URL" để thay thế.');
+        }
+      }
       
       return newData;
     });

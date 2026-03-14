@@ -12,12 +12,12 @@ interface EditableTextProps {
   highlightVariables?: boolean;
 }
 
-export const EditableText: React.FC<EditableTextProps> = ({ 
-  path, 
-  className = '', 
-  as: Component = 'span', 
-  multiline = false, 
-  guestName, 
+export const EditableText: React.FC<EditableTextProps> = ({
+  path,
+  className = '',
+  as: Component = 'span',
+  multiline = false,
+  guestName,
   pronoun,
   highlightVariables = false
 }) => {
@@ -58,7 +58,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
 
   const renderValue = () => {
     if (!value) return '';
-    
+
     if (!highlightVariables) {
       return value
         .replace(/{name}/g, guestName || pronoun || 'bạn')
@@ -112,14 +112,14 @@ export const EditableText: React.FC<EditableTextProps> = ({
   }
 
   return (
-    <Component 
+    <Component
       className={`relative group cursor-pointer hover:outline hover:outline-2 hover:outline-primary/50 hover:outline-offset-4 rounded transition-all ${className}`}
       onClick={() => setIsEditing(true)}
     >
       {renderValue()}
-      <div className="absolute -top-3 -right-3 bg-primary text-background-dark p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg">
+      <span className="absolute -top-3 -right-3 bg-primary text-background-dark p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg flex items-center justify-center">
         <Pencil size={12} />
-      </div>
+      </span>
     </Component>
   );
 };

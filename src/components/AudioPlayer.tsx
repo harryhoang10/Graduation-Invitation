@@ -65,6 +65,17 @@ export const AudioPlayer: React.FC<{ isUnlocked: boolean }> = ({ isUnlocked }) =
     }
   }, [audioSrc]);
 
+  // Play audio when invitation is unlocked
+  useEffect(() => {
+    if (isUnlocked && !isPlaying && audioRef.current) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch(err => {
+        console.warn('Autoplay prevented by browser:', err);
+      });
+    }
+  }, [isUnlocked]);
+
   useEffect(() => {
     const playAudio = async () => {
       if (audioRef.current && !isPlaying) {
@@ -113,10 +124,24 @@ export const AudioPlayer: React.FC<{ isUnlocked: boolean }> = ({ isUnlocked }) =
 
   const handleAudioFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('audio/')) {
+      alert('Vui lòng chọn file âm thanh (MP3, WAV, v.v)');
       return;
     }
 
     try {
+      // Check if file is too large for localStorage (approx > 2MB will usually fail in base64)
+      const MAX_SIZE_MB = 2;
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`File quá lớn (${(file.size / 1024 / 1024).toFixed(1)}MB). Vui lòng chọn file dưới ${MAX_SIZE_MB}MB để có thể lưu trữ vĩnh viễn.\n\nNhạc vẫn sẽ phát tạm thời nhưng không được lưu lại.`);
+        // Fallback to object URL for temporary playback
+        const tempUrl = URL.createObjectURL(file);
+        setAudioSrc(tempUrl);
+        setAudioFileName(file.name + ' (Chưa lưu)');
+        setShowUploadPanel(false);
+        setIsDragOver(false);
+        return;
+      }
+
       // For large files, use object URL instead of base64 to avoid localStorage limits
       // But also save base64 for share link persistence
       const dataUrl = await fileToDataUrl(file);
@@ -126,17 +151,23 @@ export const AudioPlayer: React.FC<{ isUnlocked: boolean }> = ({ isUnlocked }) =
       setShowUploadPanel(false);
       setIsDragOver(false);
 
-      // Save to localStorage for persistence across page reloads
-      localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify({
-        url: dataUrl,
-        name: file.name
-      }));
+      try {
+        // Save to localStorage for persistence across page reloads
+        localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify({
+          url: dataUrl,
+          name: file.name
+        }));
+      } catch (e) {
+        console.warn('LocalStorage quota exceeded, could not save audio file persistently', e);
+        alert('Cảnh báo: File hơi lớn nên không thể lưu vào bộ nhớ tạm của trình duyệt, nhưng vẫn có thể lưu vào file data.ts nếu bạn nhấn Save.');
+      }
 
       // Also save to data context so it's included in share links
       updateData('audioUrl', dataUrl);
       updateData('audioFileName', file.name);
     } catch (err) {
       console.error('Failed to process audio file:', err);
+      alert('Có lỗi xảy ra khi xử lý file âm thanh.');
     }
   }, [updateData]);
 
