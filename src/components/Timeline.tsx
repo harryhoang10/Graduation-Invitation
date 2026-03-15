@@ -114,6 +114,13 @@ export default function Timeline({ guestName, pronoun }: any) {
               ))}
             </div>
           </div>
+
+          {/* Swipe/drag hint */}
+          <div className="flex items-center justify-center gap-2 mt-2 text-primary/40 animate-pulse">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-60"><path d="M15 18l-6-6 6-6"/></svg>
+            <span className="text-[10px] uppercase tracking-[0.3em] font-medium">Kéo để khám phá</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-60"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
         </div>
 
         <motion.div
