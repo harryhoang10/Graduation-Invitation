@@ -31,7 +31,7 @@ const swipePower = (offset: number, velocity: number) => {
 };
 
 export default function Timeline({ guestName, pronoun }: any) {
-  const [step, setStep] = useState(4);
+  const [step, setStep] = useState(1);
   const [[page, direction], setPage] = useState([0, 0]);
   const { data, isAdmin } = useData();
   const milestones = data.timeline.milestones;
